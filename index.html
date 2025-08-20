@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IPO Hisab Kitab</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .form-box { background: #ffffff; border-radius: 8px; box-shadow: 0px 2px 6px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+    .result-box { border: 1px solid #dee2e6; border-radius: 6px; overflow: hidden; margin-top: 15px; }
+    .result-header { background: #d50000; color: white; padding: 10px; font-weight: bold; }
+    .result-table { border-collapse: collapse; width: 100%; text-align: center; }
+    .result-table td { border: 1px solid #dee2e6; padding: 8px; }
+    .red-text { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Company Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="#">🚀 IPO Hisab Kitab</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <div class="row">
+      <div class="col-12 mb-4 text-center">
+        <h3>MUFG IPO Checker</h3>
+        <p>Easily check your IPO application status with PAN details.</p>
+      </div>
+
+      <!-- ✅ Left: CSV/Excel Upload -->
+      <div class="col-lg-6 col-md-12">
+        <div class="form-box">
+          <h4 class="mb-3">📂 Bulk PAN Upload</h4>
+          <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="ipo_name_csv" class="form-label">Select IPO Name:</label>
+              <select class="form-select" name="ipo_name" id="ipo_name_csv" required onchange="setLabel()">
+                <option value="">-- Select IPO --</option>
+                {% for ipo in ipos %}
+                  <option value="{{ ipo.id }}" data-label="{{ ipo.name }}">{{ ipo.name }}</option>
+                {% endfor %}
+              </select>
+              <input type="hidden" name="ipo_label" id="ipo_label">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Upload File (CSV/Excel with column "PAN"):</label>
+              <input type="file" name="file" class="form-control" accept=".csv,.xls,.xlsx" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Upload & Download Results</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ✅ Right: Single PAN Search -->
+      <div class="col-lg-6 col-md-12">
+        <div class="form-box">
+          <h4 class="mb-3">🔎 Single PAN Search</h4>
+          <form action="/single" method="post">
+            <div class="mb-3">
+              <label for="ipo_name_single" class="form-label">Select IPO Name:</label>
+              <select class="form-select" name="ipo_name" id="ipo_name_single" required>
+                <option value="">-- Select IPO --</option>
+                {% for ipo in ipos %}
+                  <option value="{{ ipo.id }}">{{ ipo.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="pan" class="form-label">Enter PAN:</label>
+              <input type="text" name="pan" id="pan" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Check Status</button>
+          </form>
+
+          <!-- ✅ Show result -->
+          {% if single_result %}
+          <div class="result-box mt-4">
+            <div class="result-header">
+              Application Details - {{ single_result.Category or "N/A" }}
+            </div>
+            <table class="result-table">
+              <tr>
+                <td><b>Sole / 1st Applicant</b></td>
+                <td colspan="3">{{ single_result.Name }}</td>
+              </tr>
+              <tr>
+                <td><b>Securities applied</b></td>
+                <td class="red-text">{{ single_result.AppliedShares }}</td>
+                <td><b>Cut off Price</b></td>
+                <td class="red-text">{{ single_result.CutOffPrice }}</td>
+              </tr>
+              <tr>
+                <td><b>Securities Allotted</b></td>
+                <td class="red-text">{{ single_result.AllottedShares }}</td>
+                <td><b>Amount Adjusted</b></td>
+                <td class="red-text">{{ single_result.AmountAdjusted }}</td>
+              </tr>
+              <tr>
+                <td><b>Refund No</b></td>
+                <td>{{ single_result.RefundNo }}</td>
+                <td><b>Refund Amount</b></td>
+                <td>{{ single_result.RefundAmt }}</td>
+              </tr>
+            </table>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setLabel() {
+      let select = document.getElementById("ipo_name_csv");
+      let label = select.options[select.selectedIndex].getAttribute("data-label");
+      document.getElementById("ipo_label").value = label;
+    }
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
