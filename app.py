@@ -111,7 +111,7 @@ def upload():
     file = request.files["file"]
     filename = file.filename.lower()
 
-    # ✅ Support both CSV and Excel uploads
+    # ✅ Support CSV & Excel
     if filename.endswith(".csv"):
         df = pd.read_csv(file)
     elif filename.endswith((".xls", ".xlsx")):
@@ -120,13 +120,12 @@ def upload():
         return "Unsupported file format. Please upload CSV or Excel.", 400
 
     # ✅ Normalize column names
-    df.columns = [c.strip().upper() for c in df.columns]
+    df.columns = [c.strip().upper().replace(" ", "") for c in df.columns]
 
-    # ✅ Detect PAN column (case/space variations)
-    possible_pan_cols = ["PAN NO", "PAN", "PAN_NUMBER", "PANNO"]
+    # ✅ Detect PAN column (supports Pan, PAN, Pan No, PAN No)
     pan_col = None
-    for col in possible_pan_cols:
-        if col in df.columns:
+    for col in df.columns:
+        if "PAN" in col:  # detect any header containing PAN
             pan_col = col
             break
 
@@ -138,12 +137,11 @@ def upload():
 
     results = []
     for pan in df[pan_col]:
-        res = check_pan_status(ipo_id, str(pan).strip(), token)
+        res = check_pan_status(ipo_id, str(pan).strip().upper(), token)  # ✅ always uppercase
         results.append(res)
 
     result_df = pd.DataFrame(results)
 
-    # ✅ Save as Excel
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
     result_df.to_excel(tmp.name, index=False, engine="openpyxl")
     tmp.close()
@@ -167,12 +165,14 @@ def single():
         return "IPO and PAN are required", 400
 
     token = get_token()
-    res = check_pan_status(ipo_id, pan.strip(), token)
+    res = check_pan_status(ipo_id, pan.strip().upper(), token)  # ✅ always uppercase
 
     session["single_result"] = res
     return redirect(url_for("index"))
 
 
+
 if __name__ == "__main__":
     app.run(debug=True)
+
 
