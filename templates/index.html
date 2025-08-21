@@ -100,7 +100,9 @@
                         </div>
                         <div class="mb-3">
                             <label for="pan" class="form-label">Enter PAN:</label>
-                            <input type="text" name="pan" id="pan" class="form-control" required>
+<input type="text" name="pan" id="pan" class="form-control" 
+       style="text-transform: uppercase;" 
+       oninput="this.value = this.value.toUpperCase();" required>
                         </div>
                         <button type="submit" class="btn btn-success w-100">Check Status</button>
                     </form>
