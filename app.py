@@ -123,7 +123,7 @@ def upload():
     df.columns = [c.strip().upper() for c in df.columns]
 
     # ✅ Detect PAN column (case/space variations)
-    possible_pan_cols = ["PAN", "PAN NO", "PAN_NUMBER", "PANNO"]
+    possible_pan_cols = ["PAN NO", "PAN", "PAN_NUMBER", "PANNO"]
     pan_col = None
     for col in possible_pan_cols:
         if col in df.columns:
@@ -175,3 +175,4 @@ def single():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
