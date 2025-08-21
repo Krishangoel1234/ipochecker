@@ -119,17 +119,31 @@ def upload():
     else:
         return "Unsupported file format. Please upload CSV or Excel.", 400
 
+    # ✅ Normalize column names
+    df.columns = [c.strip().upper() for c in df.columns]
+
+    # ✅ Detect PAN column (case/space variations)
+    possible_pan_cols = ["PAN", "PAN NO", "PAN_NUMBER", "PANNO"]
+    pan_col = None
+    for col in possible_pan_cols:
+        if col in df.columns:
+            pan_col = col
+            break
+
+    if not pan_col:
+        return f"Error: PAN column not found. Found: {df.columns.tolist()}", 400
+
     ipo_id = request.form.get("ipo_name")
     token = get_token()
 
     results = []
-    for pan in df["PAN"]:
+    for pan in df[pan_col]:
         res = check_pan_status(ipo_id, str(pan).strip(), token)
         results.append(res)
 
     result_df = pd.DataFrame(results)
 
-    # ✅ Save as Excel instead of CSV
+    # ✅ Save as Excel
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
     result_df.to_excel(tmp.name, index=False, engine="openpyxl")
     tmp.close()
